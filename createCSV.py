@@ -10,7 +10,7 @@ df = ""
 
 def get_response_list():
 # create a loop that requests each movie one at a time and appends the response to a list.
-    for movie_id in range(995,996):
+    for movie_id in range(800,996):
         #send a single GET request to the API,  receive a JSON record
         r = requests.get('https://api.themoviedb.org/3/movie/{}?api_key={}'.format(movie_id, API_KEY))
         response_list.append(r.json())
@@ -18,16 +18,6 @@ def get_response_list():
 def get_genres(genres_list):
     #create a separate table for genres and a column of lists to explode out
     #genres_list = df['genres'].tolist()
-    flat_list = []
-    for sublist in genres_list:
-        if isinstance(sublist, list):
-            for item in sublist:
-                flat_list.append(item)
-    #create a pandas dataframe from unique genres
-    df_genres = pd.DataFrame.from_records(flat_list).drop_duplicates()
-    #create csv file from table genres
-    df_genres.to_csv('tmdb_genres.csv', index=False)
-
     result = []
     for l in genres_list:
         if isinstance(l,list):
@@ -57,40 +47,41 @@ def get_spoken_languages(languages):
 
 
 
-def production_countries():
+def get_production_countries(countries):
     #handle production_countries to be simple
-    countries = df['production_countries'].tolist()
-    country = []
+    
+    production_countries = []
     for l in countries:
         if isinstance(l,list):
             r = []
             for d in l:
                 r.append(d['name'])
-            country.append(r)
+            production_countries.append(r)
         else:
-            country.append(["none"])        
-    # update column production_countries (just name)
-    df = df.assign(production_countries=country)
+            production_countries.append(["none"]) 
+    return production_countries               
 
-def column():
-    #create a list of column names called df_columns that allows us to select the columns we want from the main dataframe.
-    df_columns = ['title', 'spoken_languages','production_countries', 'vote_average', 'release_date', 'runtime', 'overview']
-    #add column genres name
-    df_genre_columns = df_genres['name'].to_list()
-    df_columns.extend(df_genre_columns)
-    #break the [genres] into peaces
-    s = df['genres_all'].explode()
-    #make 0,1 in to each genres
-    df = df.join(pd.crosstab(s.index, s))
-    #create csv file from table columns
-    df[df_columns].to_csv('tmdb_movies_infomation.csv', index=False)
+def get_unique_genres(genres_list):
+    #creat list of unique genres to explode out
+    flat_list = []
+    for sublist in genres_list:
+        if isinstance(sublist, list):
+            for item in sublist:
+                flat_list.append(item)
+    #create a pandas dataframe from unique genres
+    df_genres = pd.DataFrame.from_records(flat_list).drop_duplicates()
+    #create csv file from table genres
+    #df_genres.to_csv('tmdb_genres.csv', index=False)
+
+    return df_genres['name'].to_list()
 
 
 #main
 get_response_list()
-#Create a pandas dataframe from the records
+#Create a pandas dataframe from the response_list
 df = pd.DataFrame.from_dict(response_list)
 
+#create a separate table for genres 
 genres_list = df['genres'].tolist()
 df = df.assign(genres_all=get_genres(genres_list))
 
@@ -98,3 +89,17 @@ df = df.assign(genres_all=get_genres(genres_list))
 languages = df['spoken_languages'].tolist()
 df = df.assign(spoken_languages=get_spoken_languages(languages))
 
+# update column production_countries (just name)
+countries = df['production_countries'].tolist()
+df = df.assign(production_countries=get_production_countries(countries))
+
+#create a list of column names called df_columns that allows us to select the columns we want from the main dataframe.
+df_columns = ['title', 'spoken_languages','production_countries', 'vote_average', 'release_date', 'runtime', 'overview']
+#add column genres name
+df_columns.extend(get_unique_genres(genres_list))
+#break the [genres] into peaces
+s = df['genres_all'].explode()
+#make 0,1 in to each genres
+df = df.join(pd.crosstab(s.index, s))
+#create csv file from table columns
+df[df_columns].to_csv('tmdb_movies_infomation.csv', index=False)
