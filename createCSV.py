@@ -37,6 +37,7 @@ for l in genres_list:
 # add column genres_all to df (only genres)
 df = df.assign(genres_all=result)
 
+#handle spoken languages to be simple
 languages = df['spoken_languages'].tolist()
 language = []
 for l in languages:
@@ -48,8 +49,22 @@ for l in languages:
     else:
         language.append(["none"]) 
     #print(language)       
-# add column genres_all to df (only genres)
+# update column spoken_languages (just language)
 df = df.assign(spoken_languages=language)
+
+#handle production_countries to be simple
+countries = df['production_countries'].tolist()
+country = []
+for l in countries:
+    if isinstance(l,list):
+        r = []
+        for d in l:
+            r.append(d['name'])
+        country.append(r)
+    else:
+        country.append(["none"])        
+# update column production_countries (just name)
+df = df.assign(production_countries=country)
 
 #create a list of column names called df_columns that allows us to select the columns we want from the main dataframe.
 df_columns = ['title', 'spoken_languages','production_countries', 'vote_average', 'release_date', 'runtime', 'overview']
