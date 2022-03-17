@@ -52,7 +52,7 @@ for l in languages:
 df = df.assign(spoken_languages=language)
 
 #create a list of column names called df_columns that allows us to select the columns we want from the main dataframe.
-df_columns = ['title', 'production_countries', 'vote_average', 'release_date', 'runtime', 'overview']
+df_columns = ['title', 'spoken_languages','production_countries', 'vote_average', 'release_date', 'runtime', 'overview']
 #add column genres name
 df_genre_columns = df_genres['name'].to_list()
 df_columns.extend(df_genre_columns)
