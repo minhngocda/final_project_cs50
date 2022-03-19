@@ -10,23 +10,22 @@ df = ""
 
 def get_response_list():
 # create a loop that requests each movie one at a time and appends the response to a list.
-    for movie_id in range(800,996):
+    for movie_id in range(11,996):
         #send a single GET request to the API,  receive a JSON record
         r = requests.get('https://api.themoviedb.org/3/movie/{}?api_key={}'.format(movie_id, API_KEY))
-        response_list.append(r.json())
+        #{'success': False, 'status_code': 34, 'status_message': 'The resource you requested could not be found.'}
+        if not ('success' in r.json() and str(r.json()['success']) == "False"):
+            response_list.append(r.json())
 
 def get_genres(genres_list):
     #create a separate table for genres and a column of lists to explode out
     #genres_list = df['genres'].tolist()
     result = []
     for l in genres_list:
-        if isinstance(l,list):
-            r = []
-            for d in l:
-                r.append(d['name'])
-            result.append(r)
-        else:
-            result.append(["none"])    
+        r = []
+        for d in l:
+            r.append(d['name'])
+        result.append(r)    
     # add column genres_all to df (only genres)
     return result
 
@@ -36,13 +35,10 @@ def get_spoken_languages(languages):
  
     spoken_languages = []
     for l in languages:
-        if isinstance(l,list):
-            r = []
-            for d in l:
-                r.append(d['english_name'])
-            spoken_languages.append(r)
-        else:
-            spoken_languages.append(["none"])   
+        r = []
+        for d in l:
+            r.append(d['english_name'])
+        spoken_languages.append(r)  
     return spoken_languages           
 
 
@@ -52,14 +48,11 @@ def get_production_countries(countries):
     
     production_countries = []
     for l in countries:
-        if isinstance(l,list):
-            r = []
-            for d in l:
-                r.append(d['name'])
-            production_countries.append(r)
-        else:
-            production_countries.append(["none"]) 
-    return production_countries               
+        r = []
+        for d in l:
+            r.append(d['name'])
+        production_countries.append(r) 
+    return production_countries             
 
 def get_unique_genres(genres_list):
     #creat list of unique genres to explode out
@@ -72,9 +65,7 @@ def get_unique_genres(genres_list):
     df_genres = pd.DataFrame.from_records(flat_list).drop_duplicates()
     #create csv file from table genres
     #df_genres.to_csv('tmdb_genres.csv', index=False)
-
     return df_genres['name'].to_list()
-
 
 #main
 get_response_list()
