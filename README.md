@@ -24,14 +24,15 @@ First I import necessary items:
 
 ### Extract
 
-I send a single GET request to the API. In the response, I receive a JSON record with the movie_id that I specify from 11 to 996.
-At this part, I also eliminated blank value and only add to response_list when it not “blank”. The original data has 28 columns and 984 values, but there are many values are blank:
+The original data has 28 columns and 984 values, but there are many values are blank:
  
 ![](picture/InkedEXCEL_L8yJ26rVbG_LI.jpg)	
 	
 
 
-
+I send a single GET request to the API. In the response, I receive a JSON record with the movie_id that I specify from 11 to 996.
+At this part, I also eliminated blank value and only add to response_list when it not “blank”. 
+	
 	def get_response_list():
 		for movie_id in range(11,996):
         	r = requests.get('https://api.themoviedb.org/3/movie/{}?api_key={}'.format(movie_id, API_KEY))
