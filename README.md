@@ -1,15 +1,15 @@
-﻿# ETL pipeline using Pandas in Python
-#### Video Demo:  <URL HERE>
-#### Description:
-TODO
+# ETL pipeline using Pandas in Python
+## Video Demo:  <URL HERE>
+## Description:
 
-ETL pipeline for movie data from TMDB (themoviedb.org) using Pandas in Python
+![](picture/WINWORD_GVOmgUQCM5.png)
+
 
 In this project, I will make a ETL pipeline (extract – transform – load) data from a website name The Movie Database API. First, I create an account and obtain an API key to make requests data from it.
 As I don’t want to put my API directly into my source code, I create a file called config.py
 
-#config.py
-api_key = 'my api key'
+	#config.py
+	api_key = 'my api key'
 
 I want to see original data extracted from the website, so I create original_Data.py to create a csv file (without any transform or cleanning data). THis step helps me to figue out what I want to do with this data, how would I clean it.
 
@@ -22,108 +22,100 @@ import json
 import config
 
 
-Extract
+### Extract
+
 I send a single GET request to the API. In the response, I receive a JSON record with the movie_id that I specify from 11 to 996.
 At this part, I also eliminated blank value and only add to response_list when it not “blank”. The original data has 29 columns and 984 values, but there are many values are blank, like value number 49,50:
  
+ ![](picture/chrome_ErnnCBIz9p.png)
 
-def get_response_list():
-# create a loop that requests each movie one at a time and appends the response to a list.
-    for movie_id in range(11,996):
-        #send a single GET request to the API,  receive a JSON record
-        r = requests.get('https://api.themoviedb.org/3/movie/{}?api_key={}'.format(movie_id, API_KEY))
-        #{'success': False, 'status_code': 34, 'status_message': 'The resource you requested could not be found.'}
-        if not ('success' in r.json() and str(r.json()['success']) == "False"):
-            response_list.append(r.json())
 
-Transform
+
+	def get_response_list():
+		for movie_id in range(11,996):
+        	r = requests.get('https://api.themoviedb.org/3/movie/{}?api_key={}'.format(movie_id, API_KEY))
+		if not ('success' in r.json() and str(r.json()['success']) == "False"):
+		response_list.append(r.json())
+
+### Transform
 
 The original data has 29 columns and I only want to work with some collumn so I create list of column names called df_columns that allows us to select the columns we want from the main dataframe.
-df_columns = ['title', 'spoken_languages','production_countries', 'vote_average', 'release_date', 'runtime', 'overview']
+	df_columns = ['title', 'spoken_languages','production_countries', 'vote_average', 'release_date', 'runtime', 'overview']
 
 now, I clean the data from each collumn as I expect.
 
 First, this is the fomat of collumn production_country, I only want to keep “name: ‘United Kingdom”
 
-'production_countries': [{'iso_3166_1': 'GB', 'name': 'United Kingdom'}
+*'production_countries': [{'iso_3166_1': 'GB', 'name': 'United Kingdom'}*
 
 So I make the function “get_production_countries” to do it:
 
-def get_production_countries(countries):
-    #handle production_countries to be simple
-    
-    production_countries = []
-    for l in countries:
-        r = []
-        for d in l:
-            r.append(d['name'])
+	def get_production_countries(countries):
+		production_countries = []
+		for l in countries:
+			r = []
+			for d in l:
+				r.append(d['name'])
         production_countries.append(r) 
-    return production_countries 
+		return production_countries 
 
 secondly, this is the format of “spoken_languages” and I only want to keep ‘english_name’ of it:
 
-'spoken_languages': [{'english_name': 'English', 'iso_639_1': 'en', 'name': 'English'}]
+*'spoken_languages': [{'english_name': 'English', 'iso_639_1': 'en', 'name': 'English'}]*
 
 So I make the function “get_spoken_languages” to do it:
 
-def get_spoken_languages(languages):
-#handle spoken languages to be simple 
-    spoken_languages = []
-    for l in languages:
-        r = []
-        for d in l:
-            r.append(d['english_name'])
-        spoken_languages.append(r)  
-    return spoken_languages           
+	def get_spoken_languages(languages):
+    	spoken_languages = []
+    	for l in languages:
+        	r = []
+        	for d in l:
+            	r.append(d['english_name'])
+        	spoken_languages.append(r)  
+    	return spoken_languages           
 
 with the genre, it is a bit complicate
 
- 'genres': 
-[{'id': 80, 'name': 'Crime'}, {'id': 18, 'name': 'Drama'}, {'id': 53, 'name': 'Thriller'}]
+*'genres':* 
+*[{'id': 80, 'name': 'Crime'}, {'id': 18, 'name': 'Drama'}, {'id': 53, 'name': 'Thriller'}]*
 
 I decided to make different collumn for each genre, and if the movie in that genre, it will return 1 in that collumn, or else, it will return 0. Like this: 
  
+ ![](picture/chrome_SzIuwFafbM.png)
+ 
 I creat a separate table for genres and a column of lists all genres
  
-def get_genres(genres_list):
-    #create a separate table for genres and a column of lists to explode out
-    #genres_list = df['genres'].tolist()
-    result = []
-    for l in genres_list:
-        r = []
-        for d in l:
-            r.append(d['name'])
-        result.append(r)    
-    # add column genres_all to df (only genres)
-    return result
+	def get_genres(genres_list):
+    	result = []
+    	for l in genres_list:
+        	r = []
+        	for d in l:
+            	r.append(d['name'])
+        	result.append(r)    
+    	return result
 
 from that genres list, I creat list of unique genres, and make data frame for it
 
-def get_unique_genres(genres_list):
-    #creat list of unique genres to explode out
-    flat_list = []
-    for sublist in genres_list:
-        if isinstance(sublist, list):
-            for item in sublist:
-                flat_list.append(item)
-    #create a pandas dataframe from unique genres
-    df_genres = pd.DataFrame.from_records(flat_list).drop_duplicates()
-    return df_genres['name'].to_list()
+	def get_unique_genres(genres_list):
+    	flat_list = []
+    	for sublist in genres_list:
+        	if isinstance(sublist, list):
+            	for item in sublist:
+                	flat_list.append(item)
+    	df_genres = pd.DataFrame.from_records(flat_list).drop_duplicates()
+    	return df_genres['name'].to_list()
 
 I put all genres column in to my table, and put 0/1 in to the value of each genre 
 
-#add column genres name
-df_columns.extend(get_unique_genres(genres_list))
-#break the [genres] into peaces
-s = df['genres_all'].explode()
-#make 0,1 in to each genres
-df = df.join(pd.crosstab(s.index, s))
+	df_columns.extend(get_unique_genres(genres_list))
+	s = df['genres_all'].explode()
+	df = df.join(pd.crosstab(s.index, s))
 
-Load
+### Load
 
 I ended up creating a table for the tmdb schema that I export my tables by writing them to file. This will create  .csv files in the same directory that my script is in.
 
-df[df_columns].to_csv('tmdb_movies_infomation.csv', index=False)
+	df[df_columns].to_csv('tmdb_movies_infomation.csv', index=False)
 
 
 
