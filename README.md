@@ -11,23 +11,24 @@ As I don’t want to put my API directly into my source code, I create a file ca
 	#config.py
 	api_key = 'my api key'
 
-I want to see original data extracted from the website, so I create original_Data.py to create a csv file (without any transform or cleanning data). THis step helps me to figue out what I want to do with this data, how would I clean it.
+I want to see original data extracted from the website, so I create original_Data.py to create a csv file (without any transform or cleanning data). This step helps me to figue out what I want to do with this data, how would I clean it.
 
 Then I create a file called createCSV.py. this file’s input is my API key and out put is a CSV file. That is the data from the website after ETL pipeline.
 First I import necessary items:
 
-import pandas as pd
-import requests
-import json
-import config
+	import pandas as pd
+	import requests
+	import json
+	import config
 
 
 ### Extract
 
 I send a single GET request to the API. In the response, I receive a JSON record with the movie_id that I specify from 11 to 996.
-At this part, I also eliminated blank value and only add to response_list when it not “blank”. The original data has 29 columns and 984 values, but there are many values are blank, like value number 49,50:
+At this part, I also eliminated blank value and only add to response_list when it not “blank”. The original data has 28 columns and 984 values, but there are many values are blank:
  
- ![](picture/chrome_ErnnCBIz9p.png)
+![](picture/InkedEXCEL_L8yJ26rVbG_LI.jpg)	
+	
 
 
 
@@ -39,7 +40,7 @@ At this part, I also eliminated blank value and only add to response_list when i
 
 ### Transform
 
-The original data has 29 columns and I only want to work with some collumn so I create list of column names called df_columns that allows us to select the columns we want from the main dataframe.
+The original data has 28 columns and I only want to work with some collumn so I create list of column names called df_columns that allows us to select the columns we want from the main dataframe.
 	df_columns = ['title', 'spoken_languages','production_countries', 'vote_average', 'release_date', 'runtime', 'overview']
 
 now, I clean the data from each collumn as I expect.
@@ -116,7 +117,8 @@ I put all genres column in to my table, and put 0/1 in to the value of each genr
 I ended up creating a table for the tmdb schema that I export my tables by writing them to file. This will create  .csv files in the same directory that my script is in.
 
 	df[df_columns].to_csv('tmdb_movies_infomation.csv', index=False)
-
-
+	
+ and finally, this is the result after my ETL pipeline:
+ ![](picture/EXCEL_tdmhKzPaHQ.png)
 
 
