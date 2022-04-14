@@ -1,9 +1,9 @@
-﻿# ETL pipeline using Pandas in Python
+# ETL pipeline using Pandas in Python
 #### Video Demo:  <URL HERE>
 #### Description:
-TODO
 
-ETL pipeline for movie data from TMDB (themoviedb.org) using Pandas in Python
+![](picture/WINWORD_GVOmgUQCM5.png)
+
 
 In this project, I will make a ETL pipeline (extract – transform – load) data from a website name The Movie Database API. First, I create an account and obtain an API key to make requests data from it.
 As I don’t want to put my API directly into my source code, I create a file called config.py
@@ -26,9 +26,9 @@ Extract
 I send a single GET request to the API. In the response, I receive a JSON record with the movie_id that I specify from 11 to 996.
 At this part, I also eliminated blank value and only add to response_list when it not “blank”. The original data has 29 columns and 984 values, but there are many values are blank, like value number 49,50:
  
+ ![](picture/chrome_ErnnCBIz9p.png)
 
 def get_response_list():
-# create a loop that requests each movie one at a time and appends the response to a list.
     for movie_id in range(11,996):
         #send a single GET request to the API,  receive a JSON record
         r = requests.get('https://api.themoviedb.org/3/movie/{}?api_key={}'.format(movie_id, API_KEY))
@@ -50,8 +50,6 @@ First, this is the fomat of collumn production_country, I only want to keep “n
 So I make the function “get_production_countries” to do it:
 
 def get_production_countries(countries):
-    #handle production_countries to be simple
-    
     production_countries = []
     for l in countries:
         r = []
@@ -67,7 +65,6 @@ secondly, this is the format of “spoken_languages” and I only want to keep �
 So I make the function “get_spoken_languages” to do it:
 
 def get_spoken_languages(languages):
-#handle spoken languages to be simple 
     spoken_languages = []
     for l in languages:
         r = []
@@ -83,40 +80,34 @@ with the genre, it is a bit complicate
 
 I decided to make different collumn for each genre, and if the movie in that genre, it will return 1 in that collumn, or else, it will return 0. Like this: 
  
+ ![](picture/chrome_SzIuwFafbM.png)
+ 
 I creat a separate table for genres and a column of lists all genres
  
 def get_genres(genres_list):
-    #create a separate table for genres and a column of lists to explode out
-    #genres_list = df['genres'].tolist()
     result = []
     for l in genres_list:
         r = []
         for d in l:
             r.append(d['name'])
         result.append(r)    
-    # add column genres_all to df (only genres)
     return result
 
 from that genres list, I creat list of unique genres, and make data frame for it
 
 def get_unique_genres(genres_list):
-    #creat list of unique genres to explode out
     flat_list = []
     for sublist in genres_list:
         if isinstance(sublist, list):
             for item in sublist:
                 flat_list.append(item)
-    #create a pandas dataframe from unique genres
     df_genres = pd.DataFrame.from_records(flat_list).drop_duplicates()
     return df_genres['name'].to_list()
 
 I put all genres column in to my table, and put 0/1 in to the value of each genre 
 
-#add column genres name
 df_columns.extend(get_unique_genres(genres_list))
-#break the [genres] into peaces
 s = df['genres_all'].explode()
-#make 0,1 in to each genres
 df = df.join(pd.crosstab(s.index, s))
 
 Load
