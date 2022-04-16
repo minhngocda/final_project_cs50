@@ -5,7 +5,7 @@
 ![](picture/WINWORD_GVOmgUQCM5.png)
 
 
-In this project, I will make a ETL pipeline (extract – transform – load) data from a website name The Movie Database API. First, I create an account and obtain an API key to make requests data from it.
+In this project, I will make a ETL pipeline (extract – transform – load) data from a website name The Movie Database. First, I create an account and obtain an API key to make requests data from it.
 As I don’t want to put my API directly into my source code, I create a file called config.py
 
 	#config.py
@@ -116,7 +116,7 @@ I put all genres column in to my table, and put 0/1 in to the value of each genr
 
 ### Load
 
-I ended up creating a table for the tmdb schema that I export my tables by writing them to file. This will create  .csv files in the same directory that my script is in.
+I ended up creating a table by writing them to csv file. This will create  .csv files in the same directory that my script is in.
 
 	df[df_columns].to_csv('tmdb_movies_infomation.csv', index=False)
 	
