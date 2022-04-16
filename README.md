@@ -42,6 +42,7 @@ At this part, I also eliminated blank value and only add to response_list when i
 ### Transform
 
 The original data has 28 columns and I only want to work with some collumn so I create list of column names called df_columns that allows us to select the columns we want from the main dataframe.
+	
 	df_columns = ['title', 'spoken_languages','production_countries', 'vote_average', 'release_date', 'runtime', 'overview']
 
 now, I clean the data from each collumn as I expect.
